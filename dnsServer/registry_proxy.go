@@ -19,9 +19,9 @@ package dnsServer
 
 import (
 	"encoding/json"
-	"git.code.oa.com/polaris/polaris-go/pkg/log"
-	"git.code.oa.com/polaris/polaris-sidecar/conf"
+	"github.com/polarismesh/polaris-sidecar/conf"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"time"
 )
@@ -66,7 +66,7 @@ func (r *envoyRegistry) GetCurrentNsService() ([]string, error) {
 	reqUrl := "http://" + r.conf.SidecarAddr + ":" + r.conf.SidecarAdminPort + "/config_dump"
 
 	if req, err = http.NewRequest(http.MethodGet, reqUrl, nil); err != nil {
-		log.GetBaseLogger().Errorf("Failed to construct request, %v", err)
+		log.Printf("Failed to construct request, %v", err)
 		return nil, err
 	}
 
@@ -80,17 +80,17 @@ func (r *envoyRegistry) GetCurrentNsService() ([]string, error) {
 	}
 
 	if resp, err = httpClient.Do(req); err != nil {
-		log.GetBaseLogger().Errorf("Fail to request envoy sidecar, %v", err)
+		log.Printf("Fail to request envoy sidecar, %v", err)
 		return nil, err
 	}
 
 	if body, err = ioutil.ReadAll(resp.Body); err != nil {
-		log.GetBaseLogger().Errorf("Fail to read response, %v", err)
+		log.Printf("Fail to read response, %v", err)
 		return nil, err
 	}
 
 	if err = json.Unmarshal(body, configDump); err != nil {
-		log.GetBaseLogger().Errorf("Fail to unmarshal envoy response, %v", err)
+		log.Printf("Fail to unmarshal envoy response, %v", err)
 		return nil, err
 	}
 

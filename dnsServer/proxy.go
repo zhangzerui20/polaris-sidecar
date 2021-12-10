@@ -18,8 +18,8 @@
 package dnsServer
 
 import (
-	"git.code.oa.com/polaris/polaris-go/pkg/log"
 	"github.com/miekg/dns"
+	"log"
 	"net"
 )
 
@@ -52,7 +52,7 @@ func newDNSProxy(protocol string, resolver *LocalDNSServer) (*dnsProxy, error) {
 		p.downstreamServer.Listener, err = net.Listen("tcp", "localhost:15053")
 	}
 	if err != nil {
-		log.GetBaseLogger().Errorf("Failed to listen on %s port 15053 %v", protocol, err)
+		log.Printf("Failed to listen on %s port 15053 %v", protocol, err)
 		return nil, err
 	}
 	return p, nil
@@ -63,9 +63,9 @@ func (d *dnsProxy) ServeDNS(w dns.ResponseWriter, r *dns.Msg) {
 }
 
 func (d *dnsProxy) start() {
-	log.GetBaseLogger().Infof("Starting local %s DNS server at localhost:15053", d.protocol)
+	log.Printf("Starting local %s DNS server at localhost:15053", d.protocol)
 	err := d.downstreamServer.ActivateAndServe()
 	if err != nil {
-		log.GetBaseLogger().Errorf("Local %s DNS server terminated: %v", err)
+		log.Printf("Local %s DNS server terminated: %v", err)
 	}
 }

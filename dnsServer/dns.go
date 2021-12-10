@@ -18,8 +18,8 @@
 package dnsServer
 
 import (
-	"git.code.oa.com/polaris/polaris-go/pkg/log"
 	"github.com/miekg/dns"
+	"log"
 	"net"
 	"strings"
 	"sync/atomic"
@@ -55,7 +55,7 @@ func (h *LocalDNSServer) UpdateLookupTable(polarisServices []string, dnsResponse
 		lookupTable.buildDNSAnswers(altHosts, []net.IP{net.ParseIP(dnsResponseIp)}, nil, h.searchNamespaces)
 	}
 	h.lookupTable.Store(lookupTable)
-	log.GetBaseLogger().Infof("updated lookup table with %d hosts", len(lookupTable.allHosts))
+	log.Printf("updated lookup table with %d hosts", len(lookupTable.allHosts))
 }
 
 func (table *LookupTable) buildDNSAnswers(altHosts map[string]struct{}, ipv4 []net.IP, ipv6 []net.IP, searchNamespaces []string) {
@@ -157,7 +157,7 @@ func NewLocalDNSServer() (*LocalDNSServer, error) {
 
 	dnsConfig, err := dns.ClientConfigFromFile("/etc/resolv.conf")
 	if err != nil {
-		log.GetBaseLogger().Errorf("failed to load /etc/resolv.conf: %v", err)
+		log.Printf("failed to load /etc/resolv.conf: %v", err)
 		return nil, err
 	}
 
@@ -168,7 +168,7 @@ func NewLocalDNSServer() (*LocalDNSServer, error) {
 		h.searchNamespaces = dnsConfig.Search
 	}
 
-	log.GetBaseLogger().Infof("upstream servers: %v", h.resolvConfServers)
+	log.Printf("upstream servers: %v", h.resolvConfServers)
 
 	if h.udpDNSProxy, err = newDNSProxy("udp", h); err != nil {
 		return nil, err
@@ -187,9 +187,9 @@ func (h *LocalDNSServer) StartDNS() {
 
 func (h *LocalDNSServer) ServeDNS(proxy *dnsProxy, w dns.ResponseWriter, req *dns.Msg) {
 	var response *dns.Msg
-	log.GetBaseLogger().Infof("protocol", proxy.protocol, "edns", req.IsEdns0() != nil)
+	log.Printf("protocol", proxy.protocol, "edns", req.IsEdns0() != nil)
 
-	log.GetBaseLogger().Debugf("request %v", req)
+	log.Printf("request %v", req)
 
 	if len(req.Question) == 0 {
 		response = new(dns.Msg)
@@ -204,7 +204,7 @@ func (h *LocalDNSServer) ServeDNS(proxy *dnsProxy, w dns.ResponseWriter, req *dn
 		response = new(dns.Msg)
 		response.SetReply(req)
 		response.Rcode = dns.RcodeServerFailure
-		log.GetBaseLogger().Debugf("dns request before lookup table is loaded")
+		log.Printf("dns request before lookup table is loaded")
 		_ = w.WriteMsg(response)
 		return
 	}
@@ -221,14 +221,14 @@ func (h *LocalDNSServer) ServeDNS(proxy *dnsProxy, w dns.ResponseWriter, req *dn
 		response.Authoritative = true
 		response.Answer = answers
 		response.Truncate(size(proxy.protocol, req))
-		log.GetBaseLogger().Debugf("response for hostname %q (found=true): %v", hostname, response)
+		log.Printf("response for hostname %q (found=true): %v", hostname, response)
 		_ = w.WriteMsg(response)
 		return
 	}
 
 	response = h.queryUpstream(proxy.upstreamClient, req)
 	response.Truncate(size(proxy.protocol, req))
-	log.GetBaseLogger().Debugf("response for hostname %s (found=false): %v", hostname, response)
+	log.Printf("response for hostname %s (found=false): %v", hostname, response)
 	_ = w.WriteMsg(response)
 }
 
@@ -302,7 +302,7 @@ func (h *LocalDNSServer) queryUpstream(upstreamClient *dns.Client, req *dns.Msg)
 			response = cResponse
 			break
 		} else {
-			log.GetBaseLogger().Infof("upstream failure: %v", err)
+			log.Printf("upstream failure: %v", err)
 		}
 	}
 	if response == nil {

@@ -19,10 +19,9 @@ package main
 
 import (
 	"fmt"
-	"git.code.oa.com/polaris/polaris-go/api"
-	"git.code.oa.com/polaris/polaris-sidecar/conf"
-	"git.code.oa.com/polaris/polaris-sidecar/dnsServer"
 	"github.com/kelseyhightower/envconfig"
+	"github.com/polarismesh/polaris-sidecar/conf"
+	"github.com/polarismesh/polaris-sidecar/dnsServer"
 	"log"
 	_ "net/http/pprof"
 	"os"
@@ -109,12 +108,6 @@ func ifServiceListChanged(newNsServices []string) bool {
 
 // main entry
 func main() {
-
-	err := api.SetLoggersDir("./log/")
-	if err != nil {
-		fmt.Println("set loggerDir error, ", err)
-		return
-	}
 
 	conf := &conf.DnsConfig{}
 
